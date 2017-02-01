@@ -21,7 +21,11 @@ struct chip8 {
     uint8 ST;
     uint8 DT;
 
+    uint8 wk;
+
     uint8 screen[ScreenWidth * ScreenHeight];
+
+    uint8 key;
 };
 
 struct chip8 create_chip8();

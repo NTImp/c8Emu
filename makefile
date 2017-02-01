@@ -1,4 +1,4 @@
-src = src/chip8.c src/main.c
+src := $(wildcard src/*.c)
 
 flags = -std=c11
 

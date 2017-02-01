@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "include/chip8.h"
 #include "include/hex_font.h"
-
+#include "include/opcodes.h"
 
 void load_hex_sprites(struct chip8* mac);
 
@@ -22,6 +22,7 @@ struct chip8 create_chip8() {
     machine.PC = ProgramStart;
     machine.ST = 0;
     machine.DT = 0;
+    machine.key = 0;
     load_hex_sprites(&machine);
 
 
@@ -51,4 +52,5 @@ void chip8_update(struct chip8* mac) {
     mac->PC += 2;
     if (mac->PC >= MemSize)
         mac->PC = ProgramStart;
+    execute_opcode(mac,opcode);
 }

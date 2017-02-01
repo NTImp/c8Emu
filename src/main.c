@@ -11,7 +11,9 @@ int main(int argc, char** argv) {
     struct chip8 machine = create_chip8();
     load_rom(&machine, argv[1]);
 
-    
+    while(1) {
+        chip8_update(&machine);
+    }
 
     return 0;
 }
