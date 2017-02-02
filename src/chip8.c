@@ -14,7 +14,6 @@ struct chip8 create_chip8() {
         machine.stack[i] = 0;
     for (int i = 0; i < RegsNum; i++)
         machine.V[i] = 0;
-
     for (int i = 0; i < ScreenWidth * ScreenHeight; i++)
         machine.screen[i] = 0;
     machine.I = 0;
@@ -23,6 +22,7 @@ struct chip8 create_chip8() {
     machine.ST = 0;
     machine.DT = 0;
     machine.key = 0;
+    machine.keys = 0;
     load_hex_sprites(&machine);
 
 
@@ -47,10 +47,21 @@ void load_hex_sprites(struct chip8* mac) {
         mac->memory[i] = hex_font[i];
 }
 
-void chip8_update(struct chip8* mac) {
+void chip8_update(struct chip8* mac,uint8 key) {
+    if(mac->wk) {
+        if(mac->key) {
+            mac->V[mac->wk - 1] = mac->key;
+            mac->wk = 0;
+        }
+    }
+
     uint16 opcode = (mac->memory[mac->PC] << 8) + (mac->memory[mac->PC + 1]);
-    mac->PC += 2;
-    if (mac->PC >= MemSize)
-        mac->PC = ProgramStart;
+    //printf("Line: %04x\nValue: %04x\n",mac->PC, opcode);
+    mac->PC = (mac->PC + 2) & 0x0fff;
     execute_opcode(mac,opcode);
+
+    if (mac->ST)
+        mac->ST--;
+    if (mac->DT)
+        mac->DT--;
 }

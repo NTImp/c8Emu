@@ -1,6 +1,6 @@
 src := $(wildcard src/*.c)
 
-flags = -std=c11
+flags = -std=c11 -lSDL2 -lSDL2main
 
 out = c8EMU
 out_dir = bin
