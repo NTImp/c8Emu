@@ -107,13 +107,13 @@ int main(int argc, char** argv) {
         }
         C8Updatekeys(&machine);
 
-        chip8_update(&machine, 0);
+        chip8_update(&machine, 1);
 
         FillScreen(machine.screen);
         SDL_RenderCopy(render, c8_screen, 0, 0);
         SDL_RenderPresent(render);
 
-        SDL_Delay(5);
+        SDL_Delay(2);
     }
 
     ExitSDL();

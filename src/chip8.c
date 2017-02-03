@@ -60,7 +60,7 @@ void chip8_update(struct chip8* mac, char silence) {
     uint16 opcode = (mac->memory[mac->PC] << 8) + (mac->memory[mac->PC + 1]);
 
     mac->PC = (mac->PC + 2) & 0x0fff;
-    execute_opcode(mac,opcode,1);
+    execute_opcode(mac,opcode,silence);
 
     if (mac->ST)
         mac->ST--;

@@ -141,14 +141,14 @@ void XOR_VxVy(struct chip8* mac, uint16 opcode) {
 void ADD_VxVy(struct chip8* mac, uint16 opcode) {
     log("ADD Vx Vy");
     mac->V[0xf] = mac->V[X(opcode)] > ((mac->V[X(opcode)] + mac->V[Y(opcode)]) & 0xff);
-    mac->V[X(opcode)] = mac->V[X(opcode)] + mac->V[Y(opcode)];
+    mac->V[X(opcode)] += mac->V[Y(opcode)];
 
 }
 
 void SUB_VxVy(struct chip8* mac, uint16 opcode) {
     log("SUB Vx Vy");
     mac->V[0xf] = mac->V[X(opcode)] > mac->V[Y(opcode)];
-    mac->V[X(opcode)] = mac->V[X(opcode)] - mac->V[Y(opcode)];
+    mac->V[X(opcode)] -= mac->V[Y(opcode)];
 }
 
 void SHR_VxVy(struct chip8* mac, uint16 opcode) {
@@ -265,13 +265,13 @@ void LD_BVx(struct chip8* mac, uint16 opcode) {
 
 void LD_IVx(struct chip8* mac, uint16 opcode) {
     log("LD I Vx");
-    for (int i = 0; i < X(opcode); i++)
+    for (int i = 0; i <= X(opcode); i++)
         mac->memory[mac->I + i] = mac->V[i];
 }
 
 void LD_VxI(struct chip8* mac, uint16 opcode) {
     log("LD Vx I");
-    for (int i = 0; i < X(opcode); i++)
+    for (int i = 0; i <= X(opcode); i++)
         mac->V[i] = mac->memory[mac->I + i];
 }
 
