@@ -22,20 +22,41 @@ void DRW_VxVyN(struct chip8* mac, uint16 opcode); //op_dxxx
 void op_exxx(struct chip8* mac, uint16 opcode);
 void op_fxxx(struct chip8* mac, uint16 opcode);
 
-#define NNN(opcode) (opcode & 0x0fff)
-#define N(opcode) (opcode & 0x000f)
+#define NNN(opcode) (opcode & 0xfff)
+#define N(opcode) (opcode & 0x0f)
 #define X(opcode) ((opcode >> 8) & 0x0f)
-#define Y(opcode) ((opcode >> 4) & 0x000f)
-#define KK(opcode) (opcode & 0x00ff)
+#define Y(opcode) ((opcode >> 4) & 0x0f)
+#define KK(opcode) (opcode & 0xff)
 
-void execute_opcode(struct chip8* mac, uint16 opcode) {
+char silenced = 1;
+
+void log(const char* txt) {
+    if (!silenced) {
+        printf(txt);
+        printf("\n");
+    }
+}
+
+void execute_opcode(struct chip8* mac, uint16 opcode, char s) {
     static opcode_ptr opcodes[] = {
-        op_0xxx, JP_addr, CALL_addr, SE_VxByte,
-        SNE_VxByte, SE_VxVy, LD_VxByte, ADD_VxByte,
-        op_8xxx, SNE_VxVy, LD_Iaddr, JP_V0addr,
-        RND_VxByte, DRW_VxVyN, op_exxx, op_fxxx
+        op_0xxx, //0
+        JP_addr, //1
+        CALL_addr, //2
+        SE_VxByte, //3
+        SNE_VxByte, //4
+        SE_VxVy, //5
+        LD_VxByte, //6
+        ADD_VxByte, //7
+        op_8xxx, //8
+        SNE_VxVy, //9
+        LD_Iaddr, //a
+        JP_V0addr, //b
+        RND_VxByte, //c
+        DRW_VxVyN, //d
+        op_exxx, //e
+        op_fxxx //f
     };
-
+    silenced = s;
     opcodes[opcode >> 12](mac,opcode);
 }
 
@@ -44,181 +65,198 @@ void execute_opcode(struct chip8* mac, uint16 opcode) {
  */
 
 void CLS(struct chip8* mac, uint16 opcode) {
-    //printf("CLS\n");
+    log("CLS");
+    for (int i=0; i < 32*64; i++) {
+        mac->screen[i] = 0;
+    }
 }
 void RET(struct chip8* mac, uint16 opcode) {
-    //printf("RET\n");
+    log("RET");
 
     mac->PC = mac->stack[mac->SP];
-    if (mac->SP)
-        mac->SP--;
-    else 
-        mac->SP = 0xf;
+    mac->SP--;
 }
 
 void JP_addr(struct chip8* mac, uint16 opcode) {
-    //printf("JP\n");
+    log("JP");
     mac->PC = NNN(opcode);
 }
 
 void CALL_addr(struct chip8* mac, uint16 opcode) {
-    //printf("CALL\n");
+    log("CALL");
+    mac->SP++;
     mac->stack[mac->SP] = mac->PC;
-    mac->SP = (mac->SP + 1) % 16;
     mac->PC = NNN(opcode);
 }
 
 void SE_VxByte(struct chip8* mac, uint16 opcode) {
+    log("SE Vx byte");
     if(mac->V[X(opcode)] == KK(opcode)) 
         mac->PC = (mac->PC + 2) & 0x0fff;
 }
 
 void SNE_VxByte(struct chip8* mac, uint16 opcode) {
+    log("SNE Vx byte");
     if(mac->V[X(opcode)] != KK(opcode))
         mac->PC = (mac->PC + 2) & 0x0fff;
 }
 
 void SE_VxVy(struct chip8* mac, uint16 opcode) {
+    log("SE Vx Vy");
     if(mac->V[X(opcode)] == mac->V[Y(opcode)]) {
-        mac->PC += 2;
         mac->PC = (mac->PC + 2) & 0x0fff;
     }
 }
 
 void LD_VxByte(struct chip8* mac, uint16 opcode) {
+    log("LD Vx byte");
     mac->V[X(opcode)] = KK(opcode);
 }
 
 void ADD_VxByte(struct chip8* mac, uint16 opcode) {
+    log("ADD Vx byte");
     mac->V[X(opcode)] += KK(opcode);
 }
 
 void LD_VxVy(struct chip8* mac, uint16 opcode) {
+    log("LD Vx Vy");
     mac->V[X(opcode)] = mac->V[Y(opcode)];
 }
 
 void OR_VxVy(struct chip8* mac, uint16 opcode) {
+    log("OR Vx Vy");
     mac->V[X(opcode)] |= mac->V[Y(opcode)];
 }
 
 void AND_VxVy(struct chip8* mac, uint16 opcode) {
+    log("AND Vx Vy");
     mac->V[X(opcode)] &= mac->V[Y(opcode)];
 }
 
 void XOR_VxVy(struct chip8* mac, uint16 opcode) {
+    log("XOR Vx Vy");
     mac->V[X(opcode)] ^= mac->V[Y(opcode)];
 }
 
 void ADD_VxVy(struct chip8* mac, uint16 opcode) {
-    if ((int)mac->V[X(opcode)] + mac->V[Y(opcode)] > 0xff)
-        mac->V[0xf] = 1;
-    else
-        mac->V[0xf] = 0;
+    log("ADD Vx Vy");
+    mac->V[0xf] = mac->V[X(opcode)] > ((mac->V[X(opcode)] + mac->V[Y(opcode)]) & 0xff);
     mac->V[X(opcode)] = mac->V[X(opcode)] + mac->V[Y(opcode)];
 
 }
 
 void SUB_VxVy(struct chip8* mac, uint16 opcode) {
-    if(mac->V[X(opcode)] > mac->V[Y(opcode)])
-        mac->V[0xf] = 1;
-    else
-        mac->V[0xf] = 0;
+    log("SUB Vx Vy");
+    mac->V[0xf] = mac->V[X(opcode)] > mac->V[Y(opcode)];
     mac->V[X(opcode)] = mac->V[X(opcode)] - mac->V[Y(opcode)];
 }
 
 void SHR_VxVy(struct chip8* mac, uint16 opcode) {
+    log("SHR Vx [Vy]");
     mac->V[0xf] = mac->V[X(opcode)] & 0x01;
     
     mac->V[X(opcode)] >>= 1;
 }
 
 void SUBN_VxVy(struct chip8* mac, uint16 opcode) {
-    if(mac->V[Y(opcode)] > mac->V[X(opcode)])
-        mac->V[0xf] = 1;
-    else
-        mac->V[0xf] = 0;
+    log("SUBN Vx Vy");
+    mac->V[0xf] = mac->V[Y(opcode)] > mac->V[X(opcode)];
     mac->V[X(opcode)] = mac->V[Y(opcode)] - mac->V[X(opcode)];
 }
 
 void SHL_Vx(struct chip8* mac, uint16 opcode) {
-    mac->V[0xf] = mac->V[X(opcode)] >> 7;
-    
+    log("SHL Vx");
+    mac->V[0xf] = mac->V[X(opcode)] & 0x80;
     mac->V[X(opcode)] <<= 1;
 }
 
 void SNE_VxVy(struct chip8* mac, uint16 opcode) {
+    log("SNE Vx Vy");
     if(mac->V[X(opcode)] != mac->V[Y(opcode)]) {
         mac->PC = (mac->PC + 2) & 0x0fff;
     }
 }
 
 void LD_Iaddr(struct chip8* mac, uint16 opcode) {
+    log("LD I addr");
     mac->I = NNN(opcode);
 }
 
 void JP_V0addr(struct chip8* mac, uint16 opcode) {
+    log("JP V0 addr");
     mac->PC = (NNN(opcode) + mac->V[0]) & 0x0fff;
 }
 
 void RND_VxByte(struct chip8* mac, uint16 opcode) {
-    mac->V[X(opcode)] = (uint8) rand() & KK(opcode);
+    log("RND Vx byte");
+    mac->V[X(opcode)] = rand() & KK(opcode);
 }
 
 void DRW_VxVyN(struct chip8* mac, uint16 opcode) {
+    log("DRW Vx Vy N");
     mac->V[0xf] = 0;
     uint8 dx = mac->V[X(opcode)];
     uint8 dy = mac->V[Y(opcode)];
-    for (int py = 0; py < 5; py++) {
+    for (int py = 0; py < N(opcode); py++) {
         for (int px = 0; px < 8; px++) {
-            uint8 screen_pixel = mac->screen[(py + dy) * 64 + px + dx];
+            uint8 screen_xpos = (px + dx) % 64;
+            uint8 screen_ypos = (py + dy) % 32;
+            uint8 screen_pixel = mac->screen[screen_ypos * 64 + screen_xpos];
             uint8 sprite_pixel = (mac->memory[mac->I + py] >> (7 - px)) & 0x01;
-            uint8 new_screen_pixel = (screen_pixel || sprite_pixel);
+            uint8 new_screen_pixel = (screen_pixel != sprite_pixel);
             if (screen_pixel && !new_screen_pixel)
-                mac->V[0xf] = 0;
-            mac->screen[(py + dy) * 64 + px + dx] = new_screen_pixel;
+                mac->V[0xf] = 1;
+            mac->screen[screen_ypos * 64 + screen_xpos] = new_screen_pixel;
         }
     }
 }
 
 void SKP_Vx(struct chip8* mac, uint16 opcode) {
-    if(mac->keys & 1 << mac->V[X(opcode)]) {
-        mac->PC += 2;
+    log("SKP Vx");
+    if(mac->keys[mac->V[X(opcode)]]) {
         mac->PC = (mac->PC + 2) & 0x0fff;
     }
 }
 
 void SKNP_Vx(struct chip8* mac, uint16 opcode) {
-    if(mac->keys & 1 << mac->V[X(opcode)]) {
-        mac->PC += 2;
+    log("SKNP Vx");
+    if(!mac->keys[mac->V[X(opcode)] & 0xf]) {
         mac->PC = (mac->PC + 2) & 0x0fff;
     }
 }
 
 void LD_VxDT(struct chip8* mac, uint16 opcode) {
+    log("LD Vx DT");
     mac->V[X(opcode)] = mac->DT;
 }
 
 void LD_VxK(struct chip8* mac, uint16 opcode) {
+    log("LD Vx K");
     mac->wk = 1 + X(opcode);
 }
 
 void LD_DtVx(struct chip8* mac, uint16 opcode) {
+    log("LD DT Vx");
     mac->DT = mac->V[X(opcode)];
 }
 
 void LD_StVx(struct chip8* mac, uint16 opcode) {
+    log("LD ST Vx");
     mac->ST = mac->V[X(opcode)];
 }
 
 void ADD_IVx(struct chip8* mac, uint16 opcode) {
+    log("ADD I Vx");
     mac->I = (mac->V[X(opcode)] + mac->I) & 0x0fff;
 }
 
 void LD_FVx(struct chip8* mac, uint16 opcode) {
-    mac->I = ((mac->V[X(opcode)] & 0xf) * 5) & 0x0fff;
+    log("LD F Vx");
+    mac->I = (mac->V[X(opcode)] & 0xf) * 5;
 }
 
 void LD_BVx(struct chip8* mac, uint16 opcode) {
+    log("LD B Vx");
     uint8 number = mac->V[X(opcode)];
     mac->memory[mac->I] = number / 100;
     mac->memory[mac->I + 1] = (number / 10) % 10;
@@ -226,11 +264,13 @@ void LD_BVx(struct chip8* mac, uint16 opcode) {
 }
 
 void LD_IVx(struct chip8* mac, uint16 opcode) {
+    log("LD I Vx");
     for (int i = 0; i < X(opcode); i++)
         mac->memory[mac->I + i] = mac->V[i];
 }
 
 void LD_VxI(struct chip8* mac, uint16 opcode) {
+    log("LD Vx I");
     for (int i = 0; i < X(opcode); i++)
         mac->V[i] = mac->memory[mac->I + i];
 }

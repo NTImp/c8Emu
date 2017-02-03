@@ -8,6 +8,32 @@ SDL_Window* win = 0;
 SDL_Renderer* render = 0;
 SDL_Texture* c8_screen;
 
+uint8 c8_keymap[16] = {
+    SDL_SCANCODE_X, //0
+    SDL_SCANCODE_1, //1
+    SDL_SCANCODE_2, //2
+    SDL_SCANCODE_3, //3
+    SDL_SCANCODE_Q, //4
+    SDL_SCANCODE_W, //5
+    SDL_SCANCODE_E, //6
+    SDL_SCANCODE_A, //7
+    SDL_SCANCODE_S, //8
+    SDL_SCANCODE_D, //9
+    SDL_SCANCODE_Z, //a
+    SDL_SCANCODE_C, //b
+    SDL_SCANCODE_4, //c
+    SDL_SCANCODE_R, //d
+    SDL_SCANCODE_F, //e
+    SDL_SCANCODE_V  //f
+};
+
+void C8Updatekeys(struct chip8* mac) {
+    const Uint8* skeys = SDL_GetKeyboardState(NULL);
+    for (int i = 0; i < 16; i++) {
+        mac->keys[i] = skeys[c8_keymap[i]];
+    }
+}
+
 void InitSDL() {
     SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -79,12 +105,15 @@ int main(int argc, char** argv) {
                 break;
             }
         }
-        machine.keys = 0;
-        chip8_update(&machine,0);
+        C8Updatekeys(&machine);
+
+        chip8_update(&machine, 0);
 
         FillScreen(machine.screen);
         SDL_RenderCopy(render, c8_screen, 0, 0);
         SDL_RenderPresent(render);
+
+        SDL_Delay(5);
     }
 
     ExitSDL();

@@ -25,11 +25,10 @@ struct chip8 {
 
     uint8 screen[ScreenWidth * ScreenHeight];
 
-    uint8 key;
-    uint16 keys;
+    uint8 keys[16];
 };
 
 struct chip8 create_chip8();
 
-void chip8_update(struct chip8* mac, uint8 key);
+void chip8_update(struct chip8* mac, char silence);
 int load_rom(struct chip8* mac, char* src);
