@@ -1,4 +1,7 @@
 #pragma once
+
+#include "types.h"
+
 #define MemSize 0x1000
 #define StackSize 0x10
 #define RegsNum 0x10
@@ -7,9 +10,6 @@
 #define ScreenWidth 64
 #define ScreenHeight 32
 #define FontSize 80
-
-typedef unsigned char uint8;
-typedef unsigned short int uint16;
 
 struct chip8 {
     uint8 memory[MemSize];
