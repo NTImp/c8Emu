@@ -32,14 +32,14 @@ void C8Updatekeys(uint8* keys) {
     }
 }
 
-void InitSDL() {
+int InitSDL() {
     SDL_Init(SDL_INIT_EVERYTHING);
 
     win = SDL_CreateWindow("c8EMU",0,0,640,480,SDL_WINDOW_SHOWN);
     if(!win) {
         printf("Cannot create window\n");
         SDL_Quit();
-        return;
+        return 0;
     }
     render = SDL_CreateRenderer(win,-1,SDL_RENDERER_ACCELERATED);
     if(!render) {
@@ -47,11 +47,12 @@ void InitSDL() {
         SDL_DestroyWindow(win);
         win = 0;
         SDL_Quit();
-        return;
+        return 0;
     }
 
     c8_screen = SDL_CreateTexture(render,SDL_PIXELFORMAT_RGBA8888,
                 SDL_TEXTUREACCESS_STREAMING, 64, 32);
+    return 1;
 }
 
 void ExitSDL() {
@@ -80,6 +81,7 @@ void FillScreen(uint8 *screen) {
 }
 
 void DrawScreen() {
+    SDL_RenderClear(render);
     SDL_RenderCopy(render, c8_screen, 0, 0);
     SDL_RenderPresent(render);
 }

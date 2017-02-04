@@ -29,6 +29,7 @@ struct chip8 {
 };
 
 struct chip8 create_chip8();
+int load_rom(struct chip8* mac, const char* src);
 
 void chip8_update(struct chip8* mac, char silence);
-int load_rom(struct chip8* mac, char* src);
+void update_clock(struct chip8* mac);

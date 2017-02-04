@@ -29,22 +29,31 @@ struct chip8 create_chip8() {
     return machine;
 }
 
-int load_rom(struct chip8* mac, char* src) {
+int load_rom(struct chip8* mac,const char* src) {
     FILE* rom = fopen(src,"rb");
     if (!rom) {
         printf("Cannot open the rom %s\n", src);
-        return -1;
+        return 0;
     }
     fseek(rom,0,SEEK_END);
     int file_length = ftell(rom);
     fseek(rom,0,SEEK_SET);
     fread(mac->memory + ProgramStart, file_length,1,rom);
     fclose(rom);
+
+    return 1;
 }
 
 void load_hex_sprites(struct chip8* mac) {
     for (int i = 0; i < FontSize; i++)
         mac->memory[i] = hex_font[i];
+}
+
+void update_clock(struct chip8* mac) {
+    if (mac->ST)
+        mac->ST--;
+    if (mac->DT)
+        mac->DT--;
 }
 
 void chip8_update(struct chip8* mac, char silence) {
@@ -61,9 +70,4 @@ void chip8_update(struct chip8* mac, char silence) {
 
     mac->PC = (mac->PC + 2) & 0x0fff;
     execute_opcode(mac,opcode,silence);
-
-    if (mac->ST)
-        mac->ST--;
-    if (mac->DT)
-        mac->DT--;
 }

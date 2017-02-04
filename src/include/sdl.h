@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 
 void C8Updatekeys(uint8* keys);
-void InitSDL();
+int InitSDL();
 void ExitSDL();
 void FillScreen(uint8 *screen);
 
