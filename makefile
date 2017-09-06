@@ -1,19 +1,16 @@
 src := $(wildcard src/*.c)
-objects := $(addprefix bin/,$(notdir $(addsuffix .o ,$(basename $(src)))))
+objects := $(notdir $(addsuffix .o ,$(basename $(src))))
 
 
 flags = -std=c11 -lSDL2 -lSDL2main
 
-out = c8EMU
-out_dir = bin
+target = c8EMU
 
-binary_route := $(out_dir)/$(out)
+$(target): $(objects)
+	gcc -o $(target) $(objects) $(flags)
 
-build: $(out_dir) $(objects)
-	gcc -o $(binary_route) $(objects) $(flags)
-
-$(out_dir):
-	mkdir $(out_dir)
-
-bin/%.o: src/%.c
+%.o: src/%.c
 	gcc -c $< $(flags) -o $@
+
+clean:
+	rm $(objects) $(target)
