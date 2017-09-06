@@ -5,7 +5,8 @@
 
 void load_hex_sprites(struct chip8* mac);
 
-struct chip8 create_chip8() {
+struct chip8 create_chip8()
+{
     struct chip8 machine;
 
     for (int i = 0; i < MemSize; i++)
@@ -29,7 +30,8 @@ struct chip8 create_chip8() {
     return machine;
 }
 
-int load_rom(struct chip8* mac,const char* src) {
+int load_rom(struct chip8* mac,const char* src)
+{
     FILE* rom = fopen(src,"rb");
     if (!rom) {
         printf("Cannot open the rom %s\n", src);
@@ -44,19 +46,22 @@ int load_rom(struct chip8* mac,const char* src) {
     return 1;
 }
 
-void load_hex_sprites(struct chip8* mac) {
+void load_hex_sprites(struct chip8* mac)
+{
     for (int i = 0; i < FontSize; i++)
         mac->memory[i] = hex_font[i];
 }
 
-void update_clock(struct chip8* mac) {
+void update_clock(struct chip8* mac)
+{
     if (mac->ST)
         mac->ST--;
     if (mac->DT)
         mac->DT--;
 }
 
-void chip8_update(struct chip8* mac, char silence) {
+void chip8_update(struct chip8* mac, char silence)
+{
     if(mac->wk) {
         for (int i = 0; i < 16; i++) {
             if(mac->keys[i]) {

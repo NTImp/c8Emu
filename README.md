@@ -10,4 +10,3 @@ Remember that this is just an emulator, you have to get some rom to use it.
 ```
 ./c8EMU [your_rom_path]
 ```
-If the rom does not exists or is an invalid one the emulator will have an unexpected behavior.
