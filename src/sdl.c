@@ -70,12 +70,8 @@ void FillScreen(uint8 *screen) {
     Uint32* pixels = 0;
     int pitch;
     SDL_LockTexture(c8_screen, NULL,(void**)&pixels,&pitch);
-    for (int i=0;i< 64*32; i++) {
-        if(screen[i]) {
-            pixels[i] = -1;
-        } else  {
-            pixels[i] = 0;
-        }
+    for (int i=0; i < 64*32; i++) {
+	pixels[i] = screen[i] ? -1 : 0;
     }
     SDL_UnlockTexture(c8_screen);
 }
